@@ -41,15 +41,15 @@ export function LeaveCalendar({ leaveRequests, onDateSelect }: LeaveCalendarProp
         modifiers={{
           pending: (date) => {
             const leave = isLeaveDay(date);
-            return leave?.status === 'pending' ?? false;
+            return leave ? leave.status === 'pending' : false;
           },
           approved: (date) => {
             const leave = isLeaveDay(date);
-            return leave?.status === 'approved' ?? false;
+            return leave ? leave.status === 'approved' : false;
           },
           rejected: (date) => {
             const leave = isLeaveDay(date);
-            return leave?.status === 'rejected' ?? false;
+            return leave ? leave.status === 'rejected' : false;
           },
         }}
         modifiersClassNames={{
