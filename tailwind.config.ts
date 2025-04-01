@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our leave booking app
+				leave: {
+					pending: '#FCD34D',
+					approved: '#34D399',
+					rejected: '#F87171'
 				}
 			},
 			borderRadius: {
