@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Interface for user data returned from identity server
@@ -17,18 +16,24 @@ export interface LoginCredentials {
 }
 
 // Identity server configuration
-const IDENTITY_SERVER_CONFIG = {
-  baseUrl: "https://co.visual.com",
-  authorizeEndpoint: "security/connect/authorize",
-  tokenEndpoint: "security/connect/token",
-  userInfoEndpoint: "security/connect/userinfo",
-  endSessionEndpoint: "security/connect/endsession",
-  clientId: "com.visual.galaxy.com",
-  redirectUri: window.location.origin + "/auth-callback",
-  postLogoutRedirectUri: window.location.origin,
-  scope: "openid profile email impersonate",
-  responseType: "code",
-  usePkce: true,
+// The base URL is now loaded dynamically at runtime
+const getIdentityServerConfig = () => {
+  // Try to get the base URL from window.__IDENTITY_SERVER_BASE_URL__ (set via external script)
+  const baseUrl = (window as any).__IDENTITY_SERVER_BASE_URL__ || "https://co.visual.com";
+  
+  return {
+    baseUrl,
+    authorizeEndpoint: "security/connect/authorize",
+    tokenEndpoint: "security/connect/token",
+    userInfoEndpoint: "security/connect/userinfo",
+    endSessionEndpoint: "security/connect/endsession",
+    clientId: "com.visual.galaxy.com",
+    redirectUri: window.location.origin + "/auth-callback",
+    postLogoutRedirectUri: window.location.origin,
+    scope: "openid profile email impersonate",
+    responseType: "code",
+    usePkce: true,
+  };
 };
 
 // PKCE helper functions
@@ -51,6 +56,8 @@ const generateCodeChallenge = async (verifier: string): Promise<string> => {
 export const authService = {
   // Generate the authorization URL
   getAuthorizationUrl: async (): Promise<string> => {
+    const config = getIdentityServerConfig();
+    
     // Generate and store code verifier for PKCE
     const codeVerifier = generateCodeVerifier();
     localStorage.setItem('code_verifier', codeVerifier);
@@ -59,16 +66,16 @@ export const authService = {
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     
     const params = new URLSearchParams({
-      client_id: IDENTITY_SERVER_CONFIG.clientId,
-      redirect_uri: IDENTITY_SERVER_CONFIG.redirectUri,
-      response_type: IDENTITY_SERVER_CONFIG.responseType,
-      scope: IDENTITY_SERVER_CONFIG.scope,
+      client_id: config.clientId,
+      redirect_uri: config.redirectUri,
+      response_type: config.responseType,
+      scope: config.scope,
       state: authService.generateState(),
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
     });
 
-    return `${IDENTITY_SERVER_CONFIG.baseUrl}/${IDENTITY_SERVER_CONFIG.authorizeEndpoint}?${params.toString()}`;
+    return `${config.baseUrl}/${config.authorizeEndpoint}?${params.toString()}`;
   },
 
   // Generate a random state parameter to prevent CSRF attacks
@@ -101,8 +108,11 @@ export const authService = {
         throw new Error("Code verifier not found");
       }
       
-      // In a real implementation, exchange the code for tokens using the code verifier
-      // For demo purposes, we're simulating a successful authentication
+      const config = getIdentityServerConfig();
+      
+      // In a real implementation, would exchange the code for tokens using the code verifier
+      // and the proper endpoints from config
+      // For demo purposes, we're still simulating a successful authentication
       
       // Mock successful token exchange
       const user: User = {
@@ -165,12 +175,14 @@ export const authService = {
   logout: (): void => {
     localStorage.removeItem("currentUser");
     
+    const config = getIdentityServerConfig();
+    
     // Redirect to identity server end session endpoint
     const params = new URLSearchParams({
-      post_logout_redirect_uri: IDENTITY_SERVER_CONFIG.postLogoutRedirectUri,
+      post_logout_redirect_uri: config.postLogoutRedirectUri,
     });
     
-    const endSessionUrl = `${IDENTITY_SERVER_CONFIG.baseUrl}/${IDENTITY_SERVER_CONFIG.endSessionEndpoint}?${params.toString()}`;
+    const endSessionUrl = `${config.baseUrl}/${config.endSessionEndpoint}?${params.toString()}`;
     window.location.href = endSessionUrl;
   },
   
