@@ -11,6 +11,7 @@ import LeaveBooking from "./pages/LeaveBooking";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
+import AuthCallback from "./components/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/auth-callback" element={<AuthCallback />} />
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>

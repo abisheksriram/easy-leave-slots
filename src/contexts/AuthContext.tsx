@@ -10,6 +10,8 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
+  handleAuthCallback: (code: string, state: string) => Promise<boolean>;
+  redirectToLogin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,6 +51,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return user?.roles.includes(role) || false;
   };
 
+  const handleAuthCallback = async (code: string, state: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const user = await authService.handleAuthCallback(code, state);
+      setUser(user);
+      setLoading(false);
+      return !!user;
+    } catch (error) {
+      setLoading(false);
+      return false;
+    }
+  };
+
+  const redirectToLogin = () => {
+    authService.redirectToLogin();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -57,7 +76,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         isAuthenticated: !!user,
-        hasRole
+        hasRole,
+        handleAuthCallback,
+        redirectToLogin
       }}
     >
       {children}
