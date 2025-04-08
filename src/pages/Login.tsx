@@ -12,6 +12,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isIdentityLoading, setIsIdentityLoading] = useState(false);
   const { login, redirectToLogin } = useAuth();
   const navigate = useNavigate();
 
@@ -28,9 +29,15 @@ const Login = () => {
     setIsLoading(false);
   };
 
-  const handleIdentityServerLogin = (e: React.MouseEvent) => {
+  const handleIdentityServerLogin = async (e: React.MouseEvent) => {
     e.preventDefault();
-    redirectToLogin();
+    setIsIdentityLoading(true);
+    try {
+      await redirectToLogin();
+    } catch (error) {
+      console.error("Error redirecting to login:", error);
+      setIsIdentityLoading(false);
+    }
   };
 
   return (
@@ -85,8 +92,9 @@ const Login = () => {
               variant="outline" 
               type="button"
               onClick={handleIdentityServerLogin}
+              disabled={isIdentityLoading}
             >
-              Sign in with Identity Server
+              {isIdentityLoading ? "Redirecting..." : "Sign in with Identity Server"}
             </Button>
           </CardContent>
         </form>

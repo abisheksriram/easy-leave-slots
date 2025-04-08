@@ -23,22 +23,49 @@ const IDENTITY_SERVER_CONFIG = {
   tokenEndpoint: "security/connect/token",
   userInfoEndpoint: "security/connect/userinfo",
   endSessionEndpoint: "security/connect/endsession",
-  clientId: "leave-booking-client",
+  clientId: "com.visual.galaxy.com",
   redirectUri: window.location.origin + "/auth-callback",
   postLogoutRedirectUri: window.location.origin,
-  scope: "openid profile email",
+  scope: "openid profile email impersonate",
   responseType: "code",
+  usePkce: true,
+};
+
+// PKCE helper functions
+const generateCodeVerifier = (): string => {
+  const array = new Uint8Array(32);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, byte => ('0' + (byte & 0xFF).toString(16)).slice(-2)).join('');
+};
+
+const generateCodeChallenge = async (verifier: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const hash = await window.crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 };
 
 export const authService = {
   // Generate the authorization URL
-  getAuthorizationUrl: (): string => {
+  getAuthorizationUrl: async (): Promise<string> => {
+    // Generate and store code verifier for PKCE
+    const codeVerifier = generateCodeVerifier();
+    localStorage.setItem('code_verifier', codeVerifier);
+    
+    // Generate code challenge
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    
     const params = new URLSearchParams({
       client_id: IDENTITY_SERVER_CONFIG.clientId,
       redirect_uri: IDENTITY_SERVER_CONFIG.redirectUri,
       response_type: IDENTITY_SERVER_CONFIG.responseType,
       scope: IDENTITY_SERVER_CONFIG.scope,
       state: authService.generateState(),
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
     });
 
     return `${IDENTITY_SERVER_CONFIG.baseUrl}/${IDENTITY_SERVER_CONFIG.authorizeEndpoint}?${params.toString()}`;
@@ -46,20 +73,35 @@ export const authService = {
 
   // Generate a random state parameter to prevent CSRF attacks
   generateState: (): string => {
-    return Math.random().toString(36).substring(2, 15) + 
+    const state = Math.random().toString(36).substring(2, 15) + 
            Math.random().toString(36).substring(2, 15);
+    // Store state in localStorage to verify when the server returns
+    localStorage.setItem('auth_state', state);
+    return state;
   },
 
   // Redirect to identity server login
-  redirectToLogin: (): void => {
-    const authUrl = authService.getAuthorizationUrl();
+  redirectToLogin: async (): Promise<void> => {
+    const authUrl = await authService.getAuthorizationUrl();
     window.location.href = authUrl;
   },
 
   // Handle the code and state from the identity server callback
   handleAuthCallback: async (code: string, state: string): Promise<User | null> => {
     try {
-      // In a real implementation, this would exchange the code for tokens
+      // Verify state matches the one we stored
+      const storedState = localStorage.getItem('auth_state');
+      if (state !== storedState) {
+        throw new Error("Invalid state parameter");
+      }
+      
+      // Get code verifier for PKCE
+      const codeVerifier = localStorage.getItem('code_verifier');
+      if (!codeVerifier) {
+        throw new Error("Code verifier not found");
+      }
+      
+      // In a real implementation, exchange the code for tokens using the code verifier
       // For demo purposes, we're simulating a successful authentication
       
       // Mock successful token exchange
@@ -70,6 +112,10 @@ export const authService = {
         roles: ["employee"],
         token: "mock-jwt-token-" + Math.random().toString(36).substring(2)
       };
+      
+      // Clean up localStorage items used for authentication
+      localStorage.removeItem('auth_state');
+      localStorage.removeItem('code_verifier');
       
       // Store user in localStorage for persistence
       localStorage.setItem("currentUser", JSON.stringify(user));
@@ -105,7 +151,7 @@ export const authService = {
         return user;
       } else {
         // Redirect to identity server
-        authService.redirectToLogin();
+        await authService.redirectToLogin();
         return null;
       }
     } catch (error) {

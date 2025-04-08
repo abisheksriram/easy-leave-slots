@@ -11,7 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
   handleAuthCallback: (code: string, state: string) => Promise<boolean>;
-  redirectToLogin: () => void;
+  redirectToLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,8 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const redirectToLogin = () => {
-    authService.redirectToLogin();
+  const redirectToLogin = async () => {
+    await authService.redirectToLogin();
   };
 
   return (
