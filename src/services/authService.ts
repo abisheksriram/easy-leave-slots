@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 // Interface for user data returned from identity server
@@ -130,6 +131,9 @@ export const authService = {
       // Store user in localStorage for persistence
       localStorage.setItem("currentUser", JSON.stringify(user));
       
+      // Store the token separately for API calls
+      localStorage.setItem("currentUserToken", user.token);
+      
       toast.success("Login successful");
       return user;
     } catch (error) {
@@ -156,6 +160,7 @@ export const authService = {
         };
         
         localStorage.setItem("currentUser", JSON.stringify(user));
+        localStorage.setItem("currentUserToken", user.token);
         
         toast.success("Login successful");
         return user;
@@ -174,6 +179,7 @@ export const authService = {
   // Logout function
   logout: (): void => {
     localStorage.removeItem("currentUser");
+    localStorage.removeItem("currentUserToken");
     
     const config = getIdentityServerConfig();
     

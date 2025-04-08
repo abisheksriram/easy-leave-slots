@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { TopBar } from "@/components/TopBar";
 import Index from "./pages/Index";
 import LeaveBooking from "./pages/LeaveBooking";
 import NotFound from "./pages/NotFound";
@@ -30,12 +31,22 @@ const App = () => (
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={
+                <>
+                  <TopBar />
+                  <Index />
+                </>
+              } />
             </Route>
             
             {/* Protected routes with specific role requirements */}
             <Route element={<ProtectedRoute requiredRole="employee" />}>
-              <Route path="/leave" element={<LeaveBooking />} />
+              <Route path="/leave" element={
+                <>
+                  <TopBar />
+                  <LeaveBooking />
+                </>
+              } />
             </Route>
             
             {/* Catch-all route */}
