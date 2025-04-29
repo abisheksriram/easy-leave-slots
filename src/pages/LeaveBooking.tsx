@@ -6,8 +6,11 @@ import { LeaveRequestList } from "@/components/LeaveRequestList";
 import { leaveService } from "@/services/leaveService";
 import { LeaveRequest } from "@/types/leave";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/LanguageSelector";
 
 export default function LeaveBooking() {
+  const { t } = useTranslation();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,17 +33,20 @@ export default function LeaveBooking() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Leave Management</h1>
-        <p className="text-muted-foreground mt-2">Request and manage your leave days</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">{t('leave.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('leave.description')}</p>
+        </div>
+        <LanguageSelector />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs defaultValue="request" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="request">Request Leave</TabsTrigger>
-              <TabsTrigger value="history">Leave History</TabsTrigger>
+              <TabsTrigger value="request">{t('leave.request')}</TabsTrigger>
+              <TabsTrigger value="history">{t('leave.history')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="request">
@@ -66,27 +72,27 @@ export default function LeaveBooking() {
           <LeaveCalendar leaveRequests={leaveRequests} />
           
           <div className="mt-6 border rounded-lg p-4 bg-white shadow-sm">
-            <h2 className="font-semibold text-lg mb-3">Leave Balance</h2>
+            <h2 className="font-semibold text-lg mb-3">{t('leave.balance')}</h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span>Vacation</span>
+                <span>{t('leave.vacation')}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">15</span>
-                  <span className="text-sm text-muted-foreground">days</span>
+                  <span className="text-sm text-muted-foreground">{t('leave.days')}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span>Sick Leave</span>
+                <span>{t('leave.sickLeave')}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">10</span>
-                  <span className="text-sm text-muted-foreground">days</span>
+                  <span className="text-sm text-muted-foreground">{t('leave.days')}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span>Personal Leave</span>
+                <span>{t('leave.personalLeave')}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">5</span>
-                  <span className="text-sm text-muted-foreground">days</span>
+                  <span className="text-sm text-muted-foreground">{t('leave.days')}</span>
                 </div>
               </div>
             </div>
