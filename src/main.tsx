@@ -21,7 +21,12 @@ function mount(containerId: string, options = {}) {
 
 // Auto-mount if in standalone mode
 if (!window.microFrontendMounted) {
-  mount('root');
+  mount('root', { 
+    useCustomWrapper: true, 
+    wrapperProps: { 
+      headerTitle: 'Leave Management Portal'
+    }
+  });
 }
 
 // Export mount function for micro-frontend integration

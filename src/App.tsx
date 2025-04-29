@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { AppWrapper } from "./components/AppWrapper";
 import Index from "./pages/Index";
 import LeaveBooking from "./pages/LeaveBooking";
 import NotFound from "./pages/NotFound";
@@ -42,9 +43,21 @@ interface AppProps {
   basePath?: string;
   theme?: string;
   onNavigate?: (path: string) => void;
+  useCustomWrapper?: boolean;
+  wrapperProps?: {
+    customStyle?: string;
+    logo?: string;
+    headerTitle?: string;
+  };
 }
 
-const App: React.FC<AppProps> = ({ basePath = "", theme = "light", onNavigate }) => {
+const App: React.FC<AppProps> = ({ 
+  basePath = "", 
+  theme = "light", 
+  onNavigate,
+  useCustomWrapper = false,
+  wrapperProps = {}
+}) => {
   // Set theme class on body if provided
   useEffect(() => {
     if (theme) {
@@ -58,7 +71,7 @@ const App: React.FC<AppProps> = ({ basePath = "", theme = "light", onNavigate })
     };
   }, [theme]);
 
-  return (
+  const AppContent = (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -75,6 +88,13 @@ const App: React.FC<AppProps> = ({ basePath = "", theme = "light", onNavigate })
       </TooltipProvider>
     </QueryClientProvider>
   );
+
+  // Conditionally wrap the app content with the custom wrapper
+  return useCustomWrapper ? (
+    <AppWrapper {...wrapperProps}>
+      {AppContent}
+    </AppWrapper>
+  ) : AppContent;
 };
 
 export default App;
